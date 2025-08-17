@@ -1,0 +1,11 @@
+repos:
+  - repo: local
+    hooks:
+      - id: jira-id-check
+        name: Check and insert Jira ID
+        entry: python3 /home/minh/Desktop/home-workspace/git-hook/pre-commit.py
+        language: python
+        additional_dependencies: ["GitPython"]
+        # stages: [post-checkout, pre-commit, commit-msg,]
+        pass_filenames: false
+        always_run: true
