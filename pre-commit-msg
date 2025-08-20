@@ -1,8 +1,9 @@
 #!/bin/bash
-# Put this file in the following directory.git/hooks/
+# Git hook: prepare-commit-msg
+# Place this file at: .git/hooks/prepare-commit-msg (no extension)
 
 # Get the branch name
-BRANCH_NAME=$(git symbolic-ref --short HEAD)
+BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null)
 
 # Get the JIRA ticket number from the branch name
 JIRA_ID=$(echo "$BRANCH_NAME" | grep -Eio '(NXFRAM|NXAC|NXFEED|SIPC|NXLINK|NGMD)-[0-9]+$')
@@ -14,13 +15,17 @@ TEMPLATE="# Title: Summary, imperative, start upper case, don't end with a perio
 # Body: Explain *what* and *why* (not *how*). Include task ID (Jira issue).
 # Wrap at 72 chars. ################################## which is here:  #
 ######## Issue or Ticket Reference ########
-$JIRA_ID
+${JIRA_ID}
 "
 
 # Path to the commit message file
 COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="$2"
 
-# Check if the commit message file is empty (i.e., not a merge commit)
-if [ -z "$(cat "$COMMIT_MSG_FILE")" ]; then
-    echo "$TEMPLATE" > "$COMMIT_MSG_FILE"
+# Only add template for regular commits (not merges, rebases, etc.)
+if [ -z "$COMMIT_SOURCE" ] || [ "$COMMIT_SOURCE" = "template" ]; then
+    # Check if the commit message file is empty or contains only comments/whitespace
+    if [ ! -s "$COMMIT_MSG_FILE" ] || ! grep -qv '^#' "$COMMIT_MSG_FILE"; then
+        echo "$TEMPLATE" > "$COMMIT_MSG_FILE"
+    fi
 fi
