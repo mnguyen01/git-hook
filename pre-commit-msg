@@ -1,0 +1,26 @@
+#!/bin/bash
+# Put this file in the following directory.git/hooks/
+
+# Get the branch name
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+
+# Get the JIRA ticket number from the branch name
+JIRA_ID=$(echo "$BRANCH_NAME" | grep -Eio '(NXFRAM|NXAC|NXFEED|SIPC|NXLINK|NGMD)-[0-9]+$')
+
+# Define the commit message template
+TEMPLATE="# Title: Summary, imperative, start upper case, don't end with a period
+# No more than 50 chars. #### 50 chars is here:  #
+# Remember blank line between title and body.
+# Body: Explain *what* and *why* (not *how*). Include task ID (Jira issue).
+# Wrap at 72 chars. ################################## which is here:  #
+######## Issue or Ticket Reference ########
+$JIRA_ID
+"
+
+# Path to the commit message file
+COMMIT_MSG_FILE="$1"
+
+# Check if the commit message file is empty (i.e., not a merge commit)
+if [ -z "$(cat "$COMMIT_MSG_FILE")" ]; then
+    echo "$TEMPLATE" > "$COMMIT_MSG_FILE"
+fi
